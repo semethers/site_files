@@ -1,3 +1,4 @@
 "spruce_log" {0} [10]
 "dirt" {1} [5]
 "iron_bars" {0} [100]
+"bedrock" {0} [64]
