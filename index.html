@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>СНЮЩЮЗЗ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            text-align: center;
+            background-color: #f0f0f0;
+            margin-left: 220px; /* Начальный отступ для sidebar */
+            transition: margin-left 0.3s ease; /* Плавный переход */
+        }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 200px;
+            height: 100%;
+            background-color: #333;
+            color: white;
+            padding: 20px;
+            box-sizing: border-box;
+            z-index: 1000;
+            transition: left 0.3s ease; /* Плавный переход для скрытия */
+        }
+        .sidebar.hidden {
+            left: -200px; /* Скрываем sidebar */
+        }
+        .sidebar h2 {
+            margin-top: 40px; /* Подвинули текст вниз, чтобы кнопка не загораживала */
+            font-size: 1.5em;
+            color: #fff;
+        }
+        .sidebar .user-greeting {
+            margin: 10px 0;
+            font-size: 1em;
+            color: #ddd;
+        }
+        .sidebar a {
+            display: block;
+            color: #ddd;
+            text-decoration: none;
+            padding: 10px 0;
+            font-size: 1.1em;
+        }
+        .sidebar a:hover {
+            color: #fff;
+            background-color: #555;
+            border-radius: 4px;
+        }
+        .sidebar .refresh-btn {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px;
+            width: 100%;
+            margin-top: 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        .sidebar .refresh-btn:hover {
+            background-color: #1976D2;
+        }
+        .sidebar .login-btn,
+        .sidebar .logout-btn {
+            background-color: #FFC107;
+            color: black;
+            border: none;
+            padding: 10px;
+            width: 100%;
+            margin-top: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        .sidebar .login-btn:hover,
+        .sidebar .logout-btn:hover {
+            background-color: #FFB300;
+        }
+        .toggle-sidebar {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 1001;
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .header-img {
+            width: 800px;
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 20px;
+        }
+        .products-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+        .product-column {
+            border: 1px solid #ccc;
+            padding: 15px;
+            border-radius: 8px;
+            min-width: 200px;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+            background-color: rgba(249, 249, 249, 0.8);
+        }
+        .product-column.with-bg::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('https://i.imgur.com/допустим_это_ваша_картинка.jpg');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.3;
+            z-index: -1;
+        }
+        .product-name {
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+        .price {
+            color: #555;
+            margin-bottom: 5px;
+        }
+        .available {
+            color: green;
+            font-weight: bold;
+        }
+        .unavailable {
+            color: red;
+            font-weight: bold;
+        }
+        .buy-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            margin-top: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 300px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .total-price {
+            font-weight: bold;
+            margin: 15px 0;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        .close-btn {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            margin-top: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .product-icon {
+            width: 32px;
+            height: 32px;
+            margin-bottom: 10px;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+        .refresh-btn {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        .refresh-btn:hover {
+            background-color: #1976D2;
+        }
+        .discord-widget {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+<button class="toggle-sidebar" onclick="toggleSidebar()">☰</button>
+
+<div class="sidebar">
+    <h2>Навигация</h2>
+    <div id="userGreeting" class="user-greeting" style="display: none;"></div>
+    <a href="#home">Главная</a>
+    <a href="#products">Товары</a>
+    <a href="#about">О нас</a>
+    <a href="#contact">Контакты</a>
+    <button class="refresh-btn" onclick="loadProducts()">Обновить товары</button>
+    <button id="authButton" class="login-btn" onclick="openLoginModal()">Войти</button>
+</div>
+
+<img src="https://semethers.github.io/site_files/minecraft_title.png" alt="Minecraft СНЮЩЮЗЗ" class="header-img" width="800">
+
+<div id="products-container" class="products-container">Загрузка данных...</div>
+
+<div class="discord-widget">
+    <iframe src="https://discord.com/widget?id=1243563438169653248&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
+</div>
+
+<div id="buyModal" class="modal">
+    <div class="modal-content">
+        <h3>Оформление заказа</h3>
+        <div class="form-group">
+            <label for="recipient">Кому:</label>
+            <input type="text" id="recipient" placeholder="Введите имя получателя" required>
+        </div>
+        <div class="form-group">
+            <label for="delivery-address">Адрес доставки:</label>
+            <input type="text" id="delivery-address" placeholder="Введите ваш адрес" required>
+            <div class="tooltip">
+                <span style="font-size: 0.9em; color: #666;">(Подсказка)</span>
+                <span class="tooltiptext">Если в адресе есть цифры, доставка +3ар:<br>- ул. Центральная, 15<br>- ТЦ 'Глобус', 2 этаж<br>- ул. Школьная, 7</span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="quantity">Количество:</label>
+            <input type="number" id="quantity" min="1" value="1" required>
+        </div>
+        <div class="total-price" id="total-price">
+            Итого: 10ар
+        </div>
+        <button class="buy-btn" onclick="confirmOrder()">Подтвердить заказ</button>
+        <button class="close-btn" onclick="closeModal()">Закрыть</button>
+    </div>
+</div>
+
+<div id="loginModal" class="modal">
+    <div class="modal-content">
+        <h3>Вход в аккаунт</h3>
+        <div class="form-group">
+            <label for="username">Имя пользователя:</label>
+            <input type="text" id="username" placeholder="Введите имя пользователя" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Пароль:</label>
+            <input type="password" id="password" placeholder="Введите пароль" required>
+        </div>
+        <button class="buy-btn" onclick="handleLogin()">Войти</button>
+        <button class="close-btn" onclick="closeLoginModal()">Закрыть</button>
+    </div>
+</div>
+
+<script>
+    const dataUrl = "https://semethers.github.io/site_files/item.txt";
+    const passUrl = "https://semethers.github.io/site_files/pass.txt";
+    const container = document.getElementById('products-container');
+    const buyModal = document.getElementById('buyModal');
+    const loginModal = document.getElementById('loginModal');
+    const authButton = document.getElementById('authButton');
+    const userGreeting = document.getElementById('userGreeting');
+    let currentProductPrice = 0;
+    let currentProductName = "";
+    const iconBaseUrl = "https://semethers.github.io/site_files/block/";
+    let users = [];
+
+    // Функции для работы с cookie
+    function setCookie(name, value, days) {
+        let expires = "";
+        if (days) {
+            const date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            expires = "; expires=" + date.toUTCString();
+        }
+        document.cookie = name + "=" + (value || "") + expires + "; path=/";
+    }
+
+    function getCookie(name) {
+        const nameEQ = name + "=";
+        const ca = document.cookie.split(';');
+        for (let i = 0; i < ca.length; i++) {
+            let c = ca[i];
+            while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+        }
+        return null;
+    }
+
+    function deleteCookie(name) {
+        document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    }
+
+    // Проверка cookie при загрузке страницы
+    function checkLoginStatus() {
+        const username = getCookie('username');
+        if (username) {
+            userGreeting.style.display = 'block';
+            userGreeting.textContent = `Привет, ${username}!`;
+            authButton.textContent = 'Выйти';
+            authButton.classList.remove('login-btn');
+            authButton.classList.add('logout-btn');
+            authButton.onclick = handleLogout;
+        } else {
+            userGreeting.style.display = 'none';
+            authButton.textContent = 'Войти';
+            authButton.classList.remove('logout-btn');
+            authButton.classList.add('login-btn');
+            authButton.onclick = openLoginModal;
+        }
+    }
+
+    // Загрузка и декодирование данных пользователей
+    async function loadUsers() {
+        try {
+            const response = await fetch(passUrl);
+            const text = await response.text();
+            const lines = text.split('\n').filter(line => line.trim() !== '');
+
+            users = lines.map(line => {
+                // Разделяем строку по "= ", учитывая пробелы
+                const [encodedUsername, encodedPassword] = line.trim().split('= ');
+                // Двойное декодирование Base64 для имени
+                let username = atob(encodedUsername.trim());
+                username = atob(username);
+                // Двойное декодирование Base64 для пароля
+                let password = atob(encodedPassword.trim());
+                password = atob(password);
+                return { username, password };
+            });
+        } catch (error) {
+            console.error("Ошибка загрузки данных пользователей:", error);
+            alert("Не удалось загрузить данные пользователей. Попробуйте позже.");
+        }
+    }
+
+    function toggleSidebar() {
+        const sidebar = document.querySelector('.sidebar');
+        sidebar.classList.toggle('hidden');
+        document.body.style.marginLeft = sidebar.classList.contains('hidden') ? '20px' : '220px';
+    }
+
+    function loadProducts() {
+        container.innerHTML = 'Загрузка данных...';
+
+        fetch(dataUrl)
+            .then(response => response.text())
+            .then(text => {
+                const lines = text.split('\n');
+                container.innerHTML = '';
+
+                lines.forEach(line => {
+                    line = line.trim();
+                    if (line === "") return;
+
+                    const priceMatch = line.match(/\[(.*?)\]/);
+                    const statusMatch = line.match(/\{(.*?)\}/);
+                    const nameMatch = line.match(/"(.+?)"/);
+
+                    const price = priceMatch?.[1] === 'null' ? null : parseFloat(priceMatch?.[1]);
+                    const isAvailable = statusMatch?.[1] ? parseInt(statusMatch[1]) : 0;
+                    const productName = nameMatch?.[1] || "Без названия";
+
+                    const iconName = productName.toLowerCase();
+                    const iconUrl = `${iconBaseUrl}${iconName}.png?size=32`;
+
+                    const column = document.createElement('div');
+                    column.className = 'product-column';
+                    if (isAvailable === 0) column.classList.add('with-bg');
+
+                    column.innerHTML = `
+                        <img src="${iconUrl}" alt="${productName}" class="product-icon" onerror="this.src='https://via.placeholder.com/32';">
+                        <div class="product-name">${productName}</div>
+                        <div class="price">Цена: ${price !== null ? price + 'ар' : 'nullар'}</div>
+                        <div class="${isAvailable === 0 ? 'available' : 'unavailable'}">
+                            ${isAvailable === 0 ? 'Есть' : 'Нету'}
+                        </div>
+                        ${isAvailable === 0 ?
+                            `<button class="buy-btn" onclick="openModal(${price}, '${productName}')">Купить</button>` :
+                            ''}
+                    `;
+                    container.appendChild(column);
+                });
+            })
+            .catch(error => {
+                console.error("Ошибка загрузки:", error);
+                container.innerHTML = "Ошибка загрузки данных.";
+            });
+    }
+
+    loadProducts();
+
+    function updateTotalPrice() {
+        const quantity = parseInt(document.getElementById('quantity').value) || 1;
+        const address = document.getElementById('delivery-address').value.trim();
+        let total = currentProductPrice + (quantity - 1);
+
+        const hasNumbers = /\d/.test(address);
+        if (hasNumbers) {
+            total += 3;
+        }
+
+        document.getElementById('total-price').textContent = `Итого: ${total}ар`;
+    }
+
+    function openModal(price, productName) {
+        currentProductPrice = price;
+        currentProductName = productName;
+        updateTotalPrice();
+        buyModal.style.display = 'block';
+    }
+
+    function closeModal() {
+        buyModal.style.display = 'none';
+    }
+
+    function openLoginModal() {
+        loginModal.style.display = 'block';
+    }
+
+    function closeLoginModal() {
+        loginModal.style.display = 'none';
+    }
+
+    async function handleLogin() {
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value.trim();
+
+        if (!username || !password) {
+            alert('Пожалуйста, заполните все поля!');
+            return;
+        }
+
+        // Проверяем, загружены ли пользователи
+        if (users.length === 0) {
+            await loadUsers();
+        }
+
+        // Проверяем введённые данные
+        const user = users.find(u => u.username === username && u.password === password);
+        if (user) {
+            setCookie('username', username, 7);
+            alert(`Вход выполнен!\nИмя пользователя: ${username}`);
+            closeLoginModal();
+            checkLoginStatus();
+        } else {
+            alert('Неверное имя пользователя или пароль!');
+        }
+    }
+
+    function handleLogout() {
+        deleteCookie('username');
+        alert('Вы вышли из аккаунта!');
+        checkLoginStatus();
+    }
+
+    async function sendToWebhook(orderData) {
+        const webhookUrl = "https://discord.com/api/webhooks/1357026814933074051/ewOItmEAPnKyfDo_05LxKVtUZgjM9rBQ-_qvPdUVneUDhFK23E_uvV7O1IU3oix9h84d";
+
+        if (!orderData.recipient || !orderData.address || !orderData.quantity) {
+            throw new Error("Все поля должны быть заполнены!");
+        }
+
+        const message = `
+Новый заказ!
+Предмет: ${orderData.productName}
+Кому: ${orderData.recipient}
+Адрес: ${orderData.address}
+Количество: ${orderData.quantity}
+Сумма: ${orderData.total}ар${orderData.hasDeliveryFee ? ' (включая 3ар за доставку)' : ''}
+Время: ${new Date().toISOString()}
+`.trim();
+
+        try {
+            const response = await fetch(webhookUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    content: message
+                }),
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Ошибка отправки на webhook: ${response.status} ${response.statusText}\n${errorText}`);
+            }
+            console.log('Заказ успешно отправлен на webhook');
+        } catch (error) {
+            console.error('Ошибка при отправке на webhook:', error);
+            throw error;
+        }
+    }
+
+    async function confirmOrder() {
+        const recipient = document.getElementById('recipient').value.trim();
+        const address = document.getElementById('delivery-address').value.trim();
+        const quantity = document.getElementById('quantity').value;
+        const hasNumbers = /\d/.test(address);
+        const total = currentProductPrice + (quantity - 1) + (hasNumbers ? 3 : 0);
+
+        const orderData = {
+            productName: currentProductName,
+            recipient: recipient,
+            address: address,
+            quantity: quantity,
+            total: total,
+            hasDeliveryFee: hasNumbers
+        };
+
+        try {
+            await sendToWebhook(orderData);
+            alert(`Заказ оформлен!\nПредмет: ${currentProductName}\nКому: ${recipient}\nАдрес: ${address}\nКоличество: ${quantity}\nСумма: ${total}ар${hasNumbers ? ' (включая 3ар за доставку)' : ''}`);
+            closeModal();
+        } catch (error) {
+            alert(`Ошибка: ${error.message}\nПожалуйста, проверьте данные и попробуйте снова.`);
+        }
+    }
+
+    document.getElementById('quantity').addEventListener('input', updateTotalPrice);
+    document.getElementById('delivery-address').addEventListener('input', updateTotalPrice);
+
+    window.onclick = function(event) {
+        if (event.target == buyModal) {
+            closeModal();
+        }
+        if (event.target == loginModal) {
+            closeLoginModal();
+        }
+    }
+
+    // Проверяем статус входа при загрузке страницы
+    checkLoginStatus();
+</script>
+</body>
+</html>
