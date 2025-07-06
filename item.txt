@@ -1,1 +1,1 @@
-"sweet_berries" {0} [1]
+"sweet_berry_bush_stage3" {0} [1]
